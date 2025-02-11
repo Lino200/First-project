@@ -52,11 +52,11 @@
             </div>
 
             <!-- Middle Arrow -->
-            <div class="flex flex-col items-center">
-                <button class="bg-white p-2 rounded-full">
+            <div class="flex space-x-2">
+                <button id="up-button" class="bg-white p-2 rounded-full">
                     <i class="fas fa-chevron-up text-black"></i>
                 </button>
-                <button class="bg-white p-2 rounded-full mt-2" onclick="nextUser()">
+                <button id="down-button" class="bg-white p-2 rounded-full">
                     <i class="fas fa-chevron-down text-black"></i>
                 </button>
             </div>
@@ -225,12 +225,35 @@ async function randomVideoCall() {
     signalingSocket.send(JSON.stringify({ type: "offer", offer }));
 }
 
+// Change to the next user
+async function changeUser(direction) {
+    // Close the current peer connection
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+
+    // Stop the remote video stream
+    const otherWebcam = document.getElementById('other-webcam');
+    stopWebcam(otherWebcam);
+
+    // Notify the signaling server to switch to the next user
+    signalingSocket.send(JSON.stringify({ type: "change-user", direction }));
+
+    // Start a new random video call
+    randomVideoCall();
+}
+
 // Call randomVideoCall function when the page loads
 window.onload = async () => {
     const userWebcam = document.getElementById('user-webcam');
     await startWebcam(userWebcam);
     randomVideoCall();
 };
+
+// Event listeners for "up" and "down" buttons
+document.getElementById('up-button').addEventListener('click', () => changeUser('up'));
+document.getElementById('down-button').addEventListener('click', () => changeUser('down'));
     </script>
 </body>
 </html>
